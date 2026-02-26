@@ -1,0 +1,29 @@
+.pqrs-section {
+  background: white;
+  padding: 80px 20px;
+  color: #000000;
+}
+
+.pqrs-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.pqrs-title {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.pqrs-subtitle {
+  font-size: 1.3rem;
+  margin-bottom: 25px;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.pqrs-text {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
