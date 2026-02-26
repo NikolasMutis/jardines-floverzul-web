@@ -1,0 +1,54 @@
+.pqrs-form-section {
+  background-color: white;
+  padding: 60px 20px;
+}
+
+.form-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.form-title {
+  color: #1b5e20;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.pqrs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: black;
+}
+
+.pqrs-form-section button {
+  background-color: #28a745; 
+  color: white;
+  border: none;
+  padding: 8px 400px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: fit-content;
+  transition: background-color 0.3s;
+}
+
+.pqrs-form-section button:hover {
+  background-color: #1b5e20;
+}

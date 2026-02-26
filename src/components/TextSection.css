@@ -1,0 +1,19 @@
+.text-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #f5f7fa;
+}
+
+.text-section h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #976037;
+}
+
+.text-section p {
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 18px;
+  line-height: 1.8;
+  color: #555;
+}
