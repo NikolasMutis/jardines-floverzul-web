@@ -1,0 +1,22 @@
+.promociones-page {
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+.promociones-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.promociones-title {
+  color: #1b5e20; 
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.promociones-text {
+  color: black; 
+  font-size: 1.1rem;
+  line-height: 1.7;
+}

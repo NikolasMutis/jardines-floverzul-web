@@ -1,0 +1,29 @@
+.pqrs-page {
+  background-color: white;
+  padding: 20px 20px;
+}
+
+.pqrs-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.pqrs-title {
+  color: #1b5e20; 
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.pqrs-subtitle {
+  color: #1b5e20;
+  font-size: 1.3rem;
+  margin-bottom: 25px;
+  font-weight: 500;
+}
+
+.pqrs-text {
+  color: black;
+  font-size: 1.1rem;
+  line-height: 1.7;
+}

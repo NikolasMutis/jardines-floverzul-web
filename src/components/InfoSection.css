@@ -1,0 +1,36 @@
+.info-section {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 60px 40px;
+  flex-wrap: wrap;
+  background-color: white;
+}
+
+.info-card {
+  background-color: white;
+  width: 300px;
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-8px);
+}
+
+.icon {
+  font-size: 40px;
+}
+
+.info-card h2 {
+  margin: 15px 0;
+}
+
+.info-card p {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+}

@@ -1,0 +1,22 @@
+.ferias-page {
+  background-color: white;
+  padding: 40px;
+}
+
+.ferias-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left; 
+}
+
+.ferias-title {
+  color: #1c642d; 
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.ferias-text {
+  color: black;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}

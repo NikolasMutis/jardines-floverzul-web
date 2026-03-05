@@ -1,0 +1,43 @@
+.pqrs-cards-section {
+  padding: 60px 20px;
+  background-color: white;
+}
+
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.pqrs-card {
+  background-color: #f5f5f5;
+  width: 300px;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.pqrs-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.pqrs-card h3 {
+  color: #1b5e20;
+  margin-bottom: 15px;
+}
+
+.pqrs-card p {
+  color: black;
+  line-height: 1.6;
+}
