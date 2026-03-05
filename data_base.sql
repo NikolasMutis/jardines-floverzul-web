@@ -42,3 +42,13 @@ create policy "Users can insert own pqrs"
 on pqrs
 for insert
 with check (auth.uid() = user_id);
+
+create table promociones (
+  id uuid default gen_random_uuid() primary key,
+  titulo text not null,
+  descripcion text,
+  descuento integer,
+  fecha_inicio timestamp,
+  fecha_fin timestamp,
+  activa boolean default true
+);
