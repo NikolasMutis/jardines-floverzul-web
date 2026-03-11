@@ -1,6 +1,6 @@
 import "./Eventos.css";
 
-import imgEvento1 from "../assets/Planta1.jpg";
+import imgEvento1 from "../assets/Planta7.jpg";
 import imgEvento2 from "../assets/Planta6.jpg";
 
 function Eventos() {
