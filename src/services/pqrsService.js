@@ -13,6 +13,8 @@ export const createPQRS = async (pqrsData) => {
 
   return { data, error }
 }
+
+
 // Obtener todas las PQRS
 export const getAllPQRS = async () => {
 
@@ -25,12 +27,12 @@ export const getAllPQRS = async () => {
 
     if (error) throw error
 
-    return data
+    return { data }
 
   } catch (error) {
 
     console.error("Error obteniendo PQRS:", error)
-    return []
+    return { data: [] }
 
   }
 
@@ -39,20 +41,25 @@ export const getAllPQRS = async () => {
 
 // Cambiar estado
 export const updatePQRSStatus = async (id, estado) => {
+
   const { data, error } = await supabase
     .from('pqrs')
     .update({ estado })
     .eq('id', id)
 
   return { data, error }
+
 }
+
 
 // Eliminar PQRS
 export const deletePQRS = async (id) => {
+
   const { data, error } = await supabase
     .from('pqrs')
     .delete()
     .eq('id', id)
 
   return { data, error }
+
 }
