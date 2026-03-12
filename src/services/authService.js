@@ -28,6 +28,13 @@ export const logoutUser = async () => {
 
 // Usuario actual
 export const getCurrentUser = async () => {
+
   const { data, error } = await supabase.auth.getUser()
-  return { data, error }
+
+  if (error) {
+    console.error(error)
+    return null
+  }
+
+  return data.user
 }
