@@ -1,72 +1,64 @@
 import "./PqrsForm.css";
 
-function PqrsForm() {
+function PqrsForm({ tipo }) {
+
+  const titulo = {
+    peticion: "Formulario de Petición",
+    queja: "Formulario de Queja / Reclamo",
+    sugerencia: "Formulario de Sugerencia"
+  };
+
   return (
+
     <section className="pqrs-form-section">
-      <div className="form-container">
 
-        <h2 className="form-title">Formulario PQRS</h2>
+      <h2 className="form-title">{titulo[tipo]}</h2>
 
-        <form className="pqrs-form">
+      <form className="pqrs-form">
 
-          {/* Fila Nombre y Correo */}
-          <div className="form-row">
-            <div className="form-group">
-              <label>Nombre completo *</label>
-              <input type="text" placeholder="Ingresa tu nombre completo" required />
-            </div>
+        <div className="form-row">
 
-            <div className="form-group">
-              <label>Correo electrónico *</label>
-              <input type="email" placeholder="Ingresa tu correo@gmail.com" required />
-            </div>
-          </div>
-
-          {/* Tipo de solicitud */}
           <div className="form-group">
-            <label>Tipo de solicitud *</label>
-            <select required>
-              <option value="">Selecciona una opción</option>
-              <option>Petición</option>
-              <option>Queja/Reclamo</option>
-              <option>Sugerencia</option>
-            </select>
+            <label>Nombre completo *</label>
+            <input type="text" required />
           </div>
 
-          {/* Descripción */}
           <div className="form-group">
-            <label>Descripción detallada *</label>
-            <textarea
-              rows="5"
-              placeholder="Describe tu solicitud con el mayor detalle posible..."
-              required
-            ></textarea>
+            <label>Correo electrónico *</label>
+            <input type="email" required />
           </div>
 
-          {/* Archivo */}
-          <div className="form-group">
-            <label>Adjuntar archivo (opcional)</label>
-            <input type="file" />
-          </div>
+        </div>
 
-          {/* Información importante */}
-          <div className="info-box">
-            <p>
-              Recibirás una confirmación por correo electrónico
-              Tu solicitud será atendida en un plazo de 5 días hábiles 
-              Todas las PQRS son tratadas de manera confidencial 
-              Puedes hacer seguimiento con el número de radicado que te enviaremos
-            </p>
-          </div>
+        <div className="form-group">
+          <label>Descripción *</label>
+          <textarea rows="5" required></textarea>
+        </div>
 
-          {/* Botón */}
-          <button type="submit" className="submit-btn">
-            📝Enviar PQRS
-          </button>
+        <div className="form-group">
+          <label>Adjuntar archivo (opcional)</label>
+          <input type="file"/>
+        </div>
 
-        </form>
-      </div>
+        <div className = "info-box">
+          <h4>Información Importante</h4>
+
+          <ul>
+            <li>Recibirás una confirmación por correo electrónico</li>
+            <li>Tu solicitud será atendida en un plazo de 5 días hábiles</li>
+            <li>Todas las PQRS son tratadas de manera confidencial</li>
+            <li>Puedes hacer seguimiento con el número de radicado que te enviaremos</li>
+          </ul>
+        </div>
+
+        <button className="submit-btn">
+          Enviar {tipo}
+        </button>
+
+      </form>
+
     </section>
+
   );
 }
 

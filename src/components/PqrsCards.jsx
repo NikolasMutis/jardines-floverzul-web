@@ -1,36 +1,34 @@
 import "./PqrsCards.css";
 
-function PqrsCards() {
+function PqrsCards({ tipoSolicitud, setTipoSolicitud }) {
   return (
-    <section className="pqrs-cards-section">
-      <div className="cards-container">
+    <div className="cards-container">
 
-        <div className="pqrs-card">
-          <div className="card-icon">📩</div>
-          <h3>Peticiones</h3>
-          <p>
-            Solicitudes de información o servicios
-          </p>
-        </div>
-
-        <div className="pqrs-card">
-          <div className="card-icon">⚠️</div>
-          <h3>Quejas / Reclamos</h3>
-          <p>
-            Reporta situaciones que requieran atención.
-          </p>
-        </div>
-
-        <div className="pqrs-card">
-          <div className="card-icon">💡</div>
-          <h3>Sugerencias</h3>
-          <p>
-            Comparte ideas para mejorar nuestro servicio.
-          </p>
-        </div>
-
+      <div
+        className={`pqrs-card ${tipoSolicitud === "peticion" ? "active" : ""}`}
+        onClick={() => setTipoSolicitud("peticion")}
+      >
+        <h3>📄 Petición</h3>
+        <p>Solicita información o realiza una petición formal.</p>
       </div>
-    </section>
+
+      <div
+        className={`pqrs-card ${tipoSolicitud === "queja" ? "active" : ""}`}
+        onClick={() => setTipoSolicitud("queja")}
+      >
+        <h3>⚠️ Queja / Reclamo</h3>
+        <p>Reporta una inconformidad con nuestros servicios.</p>
+      </div>
+
+      <div
+        className={`pqrs-card ${tipoSolicitud === "sugerencia" ? "active" : ""}`}
+        onClick={() => setTipoSolicitud("sugerencia")}
+      >
+        <h3>💡 Sugerencia</h3>
+        <p>Ayúdanos a mejorar con tus ideas.</p>
+      </div>
+
+    </div>
   );
 }
 

@@ -3,28 +3,25 @@
   background-color: white;
 }
 
-.cards-container {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-  max-width: 1100px;
-  margin: 0 auto;
+.cards-container{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
 }
 
 .pqrs-card {
-  background-color: #f5f5f5;
-  width: 300px;
-  padding: 30px;
-  border-radius: 15px;
-  text-align: center;
-  transition: all 0.3s ease;
+  background: white;
+  padding: 28px;
+  border-radius: 14px;
   cursor: pointer;
-}
+  border: 2px solid #e8f5e9;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;}
 
 .pqrs-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  border-color:#2e7d32;
+  box-shadow:0 14px 35px rgba(0,0,0,0.15);
 }
 
 .card-icon {
@@ -33,11 +30,28 @@
 }
 
 .pqrs-card h3 {
-  color: #1b5e20;
-  margin-bottom: 15px;
+  color:#2e7d32;
+  margin-bottom:10px;
+
 }
 
 .pqrs-card p {
-  color: black;
-  line-height: 1.6;
+  color:#555;
+  font-size:14px;
+}
+
+.pqrs-card.active{
+
+  border-color:#2e7d32;
+
+  background:#f1f8f4;
+
+  transform: translateY(-4px);
+
+  box-shadow:0 14px 35px rgba(0,0,0,0.18);
+
+}
+
+.pqrs-card.active h3{
+  color:#1b5e20;
 }
