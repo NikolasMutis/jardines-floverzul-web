@@ -20,3 +20,62 @@
   font-size: 1.1rem;
   line-height: 1.7;
 }
+
+/* PROMOS DINÁMICAS */
+
+.promo-dinamicas{
+max-width:800px;
+margin:30px auto;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+/* TARJETA */
+.promo-card-custom{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+text-align:left;
+}
+
+/* TITULO */
+.promo-card-custom h3{
+color:#2f6f3e;
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:18px;
+}
+
+/* ESTADO */
+.estado{
+padding:5px 10px;
+border-radius:20px;
+font-size:12px;
+margin-left:10px;
+}
+
+.estado.ok{
+background:#2f6f3e;
+color:white;
+}
+
+.estado.no{
+background:#ccc;
+color:#333;
+}
+
+/* TEXTO */
+.promo-card-custom p{
+margin:10px 0;
+color:#444;
+}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+.promo-card-custom{
+padding:15px;
+}
+}

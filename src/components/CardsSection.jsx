@@ -1,6 +1,10 @@
 import "./CardsSection.css";
+import { useNavigate } from "react-router-dom";
 
 function CardsSection() {
+
+  const navigate = useNavigate();
+
   return (
     <section className="cards-section">
 
@@ -8,28 +12,33 @@ function CardsSection() {
         <div className="card-icon">🌿</div>
         <h3>Plantas Nativas</h3>
         <p>
-          Especies auctóctonas adaptadas al clima local, ideales 
-          para la conversación de la biodiversidad regional.
+          Especies autóctonas adaptadas al clima local.
         </p>
-        <button>Ver más</button>
+        <button onClick={() => navigate("/catalogo")}>
+          Ver más
+        </button>
       </div>
 
       <div className="card">
         <div className="card-icon">🌸</div>
         <h3>Plantas Ornamentales</h3>
         <p>
-          Hermosas plantas decorativas para embellecer jardínes, interiores y espacios exteriores.
+          Hermosas plantas decorativas.
         </p>
-        <button>Ver más</button>
+        <button onClick={() => navigate("/catalogo")}>
+          Ver más
+        </button>
       </div>
 
       <div className="card">
         <div className="card-icon">🌳</div>
         <h3>Plantas Forestales</h3>
         <p>
-          Árboles y arbustos para reforestación, recuperación de ecosistemas y proyectos ambientales. 
+          Árboles y arbustos para reforestación.
         </p>
-        <button>Ver más</button>
+        <button onClick={() => navigate("/catalogo")}>
+          Ver más
+        </button>
       </div>
 
     </section>

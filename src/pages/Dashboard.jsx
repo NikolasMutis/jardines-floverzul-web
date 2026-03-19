@@ -1,298 +1,268 @@
 import "./Dashboard.css";
 import Navbar from "../components/Navbar";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Dashboard(){
+function Dashboard() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const isAdmin = user?.role === "admin";
 
-/* ESTADOS */
+  const [tab, setTab] = useState("plantas");
+  const [showForm, setShowForm] = useState(false);
 
-const [tab,setTab] = useState("plantas")
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [desc, setDesc] = useState("");
+  const [cientifico, setCientifico] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [estado, setEstado] = useState("Disponible");
+  const [image, setImage] = useState(null);
 
-const [name,setName] = useState("")
-const [price,setPrice] = useState("")
-const [desc,setDesc] = useState("")
-const [cientifico,setCientifico] = useState("")
-const [image,setImage] = useState(null)
+  const [plants, setPlants] = useState([]);
+  const [promos, setPromos] = useState([]);
+  const [showPromoForm, setShowPromoForm] = useState(false);
+  const [promoTitle, setPromoTitle] = useState("");
+  const [promoDesc, setPromoDesc] = useState("");
+  const [promoDate, setPromoDate] = useState("");
+  const [promoStatus, setPromoStatus] = useState("Activa");
+  const [editIndex, setEditIndex] = useState(null);
 
-const [plants,setPlants] = useState([])
+  const [pqrs, setPqrs] = useState([]);
+  const [users, setUsers] = useState([]);
 
+  useEffect(() => {
+    const loggedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(loggedUser);
 
-/* CARGAR PLANTAS */
+    setPlants(JSON.parse(localStorage.getItem("plants")) || []);
+    setPromos(JSON.parse(localStorage.getItem("promos")) || []);
+    setPqrs(JSON.parse(localStorage.getItem("pqrs")) || []);
+    setUsers(JSON.parse(localStorage.getItem("users")) || []);
 
-useEffect(()=>{
+    const sync = () => {
+      setPlants(JSON.parse(localStorage.getItem("plants")) || []);
+      setPromos(JSON.parse(localStorage.getItem("promos")) || []);
+      setPqrs(JSON.parse(localStorage.getItem("pqrs")) || []);
+      setUsers(JSON.parse(localStorage.getItem("users")) || []);
+    };
 
-const storedPlants = JSON.parse(localStorage.getItem("plants")) || []
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
 
-setPlants(storedPlants)
+  const logout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/");
+  };
 
-},[])
+  const addPlant = () => {
+    if (name === "" || price === "" || tipo === "") {
+      alert("Completa los campos");
+      return;
+    }
+    const imageURL = image ? URL.createObjectURL(image) : null;
+    const newPlant = { nombre: name, name, precio: `$${price}`, price, descripcion: desc, cientifico, categoria: tipo, tipo, estado, imagen: imageURL, image: imageURL };
+    const updated = [...plants, newPlant];
+    setPlants(updated);
+    localStorage.setItem("plants", JSON.stringify(updated));
+    window.dispatchEvent(new Event("storage"));
+    setName(""); setPrice(""); setDesc(""); setCientifico(""); setTipo(""); setEstado("Disponible"); setImage(null); setShowForm(false);
+  };
 
+  const deletePlant = i => {
+    const updated = [...plants]; updated.splice(i, 1); setPlants(updated); localStorage.setItem("plants", JSON.stringify(updated));
+  };
 
-/* AGREGAR PLANTA */
+  const addPromo = () => {
+    if (promoTitle === "" || promoDesc === "") { alert("Completa los campos"); return; }
+    const newPromo = { title: promoTitle, desc: promoDesc, date: promoDate, status: promoStatus };
+    let updated = editIndex !== null ? [...promos] : [...promos, newPromo];
+    if (editIndex !== null) { updated[editIndex] = newPromo; setEditIndex(null); }
+    setPromos(updated); localStorage.setItem("promos", JSON.stringify(updated)); window.dispatchEvent(new Event("storage"));
+    setPromoTitle(""); setPromoDesc(""); setPromoDate(""); setPromoStatus("Activa"); setShowPromoForm(false);
+  };
 
-const addPlant = () => {
+  const deletePromo = i => { const updated = [...promos]; updated.splice(i, 1); setPromos(updated); localStorage.setItem("promos", JSON.stringify(updated)); };
+  const editPromo = i => { const p = promos[i]; setPromoTitle(p.title); setPromoDesc(p.desc); setPromoDate(p.date); setPromoStatus(p.status); setEditIndex(i); setShowPromoForm(true); };
+  const changeStatus = (i, estadoNuevo) => { const updated = [...pqrs]; updated[i].estado = estadoNuevo; setPqrs(updated); localStorage.setItem("pqrs", JSON.stringify(updated)); };
+  const deletePqrs = i => { const updated = [...pqrs]; updated.splice(i, 1); setPqrs(updated); localStorage.setItem("pqrs", JSON.stringify(updated)); };
+  const deleteUser = i => { if (!isAdmin) { alert("No tienes permisos"); return; } const updated = [...users]; updated.splice(i, 1); setUsers(updated); localStorage.setItem("users", JSON.stringify(updated)); };
+  const changeUserRole = i => { if (!isAdmin) { alert("No tienes permisos"); return; } const updated = [...users]; updated[i].rol = updated[i].rol === "admin" ? "cliente" : "admin"; setUsers(updated); localStorage.setItem("users", JSON.stringify(updated)); };
 
-if(name === "" || price === ""){
-alert("Completa los campos")
-return
+  return (
+    <>
+      <Navbar />
+      <section className="dashboard">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h1 className="dash-title">Panel Administrativo</h1>
+          {user && <button className="btn-green" onClick={logout}>Cerrar sesión</button>}
+        </div>
+        <p className="dash-subtitle">Gestión completa</p>
+
+        <div className="dash-cards">
+          <div className="dash-card"><h3>Plantas</h3><p>{plants.length}</p></div>
+          <div className="dash-card"><h3>Promociones</h3><p>{promos.length}</p></div>
+          <div className="dash-card"><h3>PQRS</h3><p>{pqrs.length}</p></div>
+          {isAdmin && <div className="dash-card"><h3>Usuarios</h3><p>{users.length}</p></div>}
+        </div>
+
+        <div className="dash-tabs">
+          <button className={tab==="plantas"?"active-tab":""} onClick={()=>setTab("plantas")}>Plantas</button>
+          <button className={tab==="promociones"?"active-tab":""} onClick={()=>setTab("promociones")}>Promociones</button>
+          <button className={tab==="pqrs"?"active-tab":""} onClick={()=>setTab("pqrs")}>PQRS</button>
+          {isAdmin && <button className={tab==="usuarios"?"active-tab":""} onClick={()=>setTab("usuarios")}>Usuarios</button>}
+        </div>
+
+        <div className="dash-content">
+          {tab==="plantas" && (
+            <div>
+              <div className="admin-header">
+                <h2>Catálogo de plantas</h2>
+                <div className="admin-actions">
+                  <button className="btn-white">Exportar</button>
+                  <button className="btn-green" onClick={()=>setShowForm(!showForm)}>+ Nueva Planta</button>
+                </div>
+              </div>
+              {showForm && (
+                <div className="filters">
+                  <input placeholder="Nombre" value={name} onChange={(e)=>setName(e.target.value)} />
+                  <input placeholder="Precio" value={price} onChange={(e)=>setPrice(e.target.value)} />
+                  <select value={tipo} onChange={(e)=>setTipo(e.target.value)}>
+                    <option value="">Tipo</option>
+                    <option>Ornamental</option>
+                    <option>Forestal</option>
+                    <option>Nativa</option>
+                  </select>
+                  <input placeholder="Nombre científico" value={cientifico} onChange={(e)=>setCientifico(e.target.value)} />
+                  <input type="file" onChange={(e)=>setImage(e.target.files[0])} />
+                  <button className="btn-green" onClick={addPlant}>Guardar</button>
+                </div>
+              )}
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead><tr><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+                  <tbody>{plants.map((p,i)=>(
+                    <tr key={i}>
+                      <td>{p.name}</td>
+                      <td><span className="badge tipo">{p.tipo}</span></td>
+                      <td>{p.precio}</td>
+                      <td><span className={p.estado==="Disponible"?"badge ok":"badge no"}>{p.estado}</span></td>
+                      <td className="acciones">
+                        <span>👁</span><span>✏️</span><span onClick={()=>deletePlant(i)}>🗑</span>
+                      </td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* PROMOCIONES */}
+          {tab==="promociones" && (
+            <div>
+              <div className="admin-header">
+                <h2>Promociones</h2>
+                <button className="btn-green" onClick={()=>setShowPromoForm(!showPromoForm)}>+ Nueva Promoción</button>
+              </div>
+              {showPromoForm && (
+                <div className="promo-form">
+                  <input placeholder="Título" value={promoTitle} onChange={(e)=>setPromoTitle(e.target.value)} />
+                  <input placeholder="Descripción" value={promoDesc} onChange={(e)=>setPromoDesc(e.target.value)} />
+                  <input type="date" value={promoDate} onChange={(e)=>setPromoDate(e.target.value)} />
+                  <select value={promoStatus} onChange={(e)=>setPromoStatus(e.target.value)}>
+                    <option>Activa</option>
+                    <option>Inactiva</option>
+                  </select>
+                  <button className="btn-green" onClick={addPromo}>Guardar</button>
+                </div>
+              )}
+              <div className="promo-list">{promos.map((p,i)=>(
+                <div key={i} className="promo-card">
+                  <div>
+                    <h3>{p.title}<span className="badge ok">{p.status}</span></h3>
+                    <p>{p.desc}</p>
+                    <small>Válida hasta: {p.date}</small>
+                  </div>
+                  <div className="promo-actions">
+                    <span onClick={()=>editPromo(i)}>✏️</span>
+                    <span onClick={()=>deletePromo(i)}>🗑</span>
+                  </div>
+                </div>
+              ))}</div>
+            </div>
+          )}
+
+          {/* PQRS */}
+          {tab==="pqrs" && (
+            <div>
+              <div className="admin-header">
+                <h2>PQRS Recibidos</h2>
+                <button className="btn-white">⬇ Exportar Reporte</button>
+              </div>
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>ID</th><th>Tipo</th><th>Nombre</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr>
+                  </thead>
+                  <tbody>
+                    {pqrs.length===0 ? <tr><td colSpan="6">No hay PQRS aún</td></tr> :
+                      pqrs.map((p,i)=>(
+                        <tr key={i}>
+                          <td>#{i+1}</td>
+                          <td><span className="badge tipo">{p.tipo}</span></td>
+                          <td>{p.nombre}</td>
+                          <td>{p.fecha}</td>
+                          <td><span className={p.estado==="Pendiente"?"badge no":p.estado==="En proceso"?"badge tipo":"badge ok"}>{p.estado}</span></td>
+                          <td className="acciones">
+                            <span onClick={()=>changeStatus(i,"Pendiente")}>🕓</span>
+                            <span onClick={()=>changeStatus(i,"En proceso")}>⚙️</span>
+                            <span onClick={()=>changeStatus(i,"Resuelta")}>✅</span>
+                            <span onClick={()=>deletePqrs(i)}>🗑</span>
+                          </td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* USUARIOS */}
+          {tab==="usuarios" && isAdmin && (
+            <div>
+              <div className="admin-header"><h2>Gestión de Usuarios</h2></div>
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+                  </thead>
+                  <tbody>
+                    {users.length===0 ? <tr><td colSpan="5">No hay usuarios aún</td></tr> :
+                      users.map((u,i)=>(
+                        <tr key={i}>
+                          <td>{u.name}</td>
+                          <td>{u.email}</td>
+                          <td><span className="badge tipo">{u.rol || "cliente"}</span></td>
+                          <td><span className={u.estado==="activo"?"badge ok":"badge no"}>{u.estado || "activo"}</span></td>
+                          <td className="acciones">
+                            <span onClick={()=>changeUserRole(i)}>🔄</span>
+                            <span onClick={()=>deleteUser(i)}>🗑</span>
+                          </td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
 }
 
-const imageURL = image ? URL.createObjectURL(image) : null
-
-const newPlant = {
-
-name,
-price,
-descripcion:desc,
-cientifico:cientifico,
-image:imageURL
-
-}
-
-const updatedPlants = [...plants,newPlant]
-
-setPlants(updatedPlants)
-
-localStorage.setItem("plants",JSON.stringify(updatedPlants))
-
-setName("")
-setPrice("")
-setDesc("")
-setCientifico("")
-setImage(null)
-
-}
-
-
-/* ELIMINAR PLANTA */
-
-const deletePlant = (index) => {
-
-const updatedPlants = [...plants]
-
-updatedPlants.splice(index,1)
-
-setPlants(updatedPlants)
-
-localStorage.setItem("plants", JSON.stringify(updatedPlants))
-
-}
-
-
-/* RENDER */
-
-return(
-
-<>
-
-<Navbar/>
-
-<section className="dashboard">
-
-<h1 className="dash-title">Panel Administrativo</h1>
-
-<p className="dash-subtitle">
-Gestión completa del sistema
-</p>
-
-
-{/* TARJETAS */}
-
-<div className="dash-cards">
-
-<div className="dash-card">
-<h3>Plantas registradas</h3>
-<p>{plants.length}</p>
-</div>
-
-<div className="dash-card">
-<h3>Promociones activas</h3>
-<p>3</p>
-</div>
-
-<div className="dash-card">
-<h3>PQRS recibidos</h3>
-<p>12</p>
-</div>
-
-<div className="dash-card">
-<h3>Usuarios registrados</h3>
-<p>5</p>
-</div>
-
-</div>
-
-
-{/* BARRA DE PESTAÑAS */}
-
-<div className="dash-tabs">
-
-<button onClick={()=>setTab("plantas")}>
-Plantas
-</button>
-
-<button onClick={()=>setTab("promociones")}>
-Promociones
-</button>
-
-<button onClick={()=>setTab("pqrs")}>
-PQRS
-</button>
-
-<button onClick={()=>setTab("usuarios")}>
-Usuarios
-</button>
-
-</div>
-
-
-
-{/* SECCIÓN DINÁMICA */}
-
-<div className="dash-content">
-
-
-{/* PLANTAS */}
-
-{tab === "plantas" && (
-
-<>
-
-<div className="plant-form">
-
-<h2>Agregar planta</h2>
-
-<input
-placeholder="Nombre de la planta"
-value={name}
-onChange={(e)=>setName(e.target.value)}
-/>
-
-<input
-placeholder="Nombre científico"
-value={cientifico}
-onChange={(e)=>setCientifico(e.target.value)}
-/>
-
-<input
-placeholder="Precio"
-value={price}
-onChange={(e)=>setPrice(e.target.value)}
-/>
-
-<textarea
-placeholder="Descripción"
-value={desc}
-onChange={(e)=>setDesc(e.target.value)}
-/>
-
-<input
-type="file"
-onChange={(e)=>setImage(e.target.files[0])}
-/>
-
-<button onClick={addPlant}>
-Guardar planta
-</button>
-
-</div>
-
-
-<h2 className="plant-list-title">Plantas registradas</h2>
-
-<div className="plant-list">
-
-{plants.map((plant,index)=>(
-
-<div className="plant-item" key={index}>
-
-{plant.image && (
-<img src={plant.image} alt={plant.name}/>
-)}
-
-<div className="plant-info">
-
-<h4>{plant.name}</h4>
-
-<p>{plant.cientifico}</p>
-
-<p>${plant.price}</p>
-
-</div>
-
-<button
-className="delete-btn"
-onClick={()=>deletePlant(index)}
->
-Eliminar
-</button>
-
-</div>
-
-))}
-
-</div>
-
-</>
-
-)}
-
-
-
-{/* PROMOCIONES */}
-
-{tab === "promociones" && (
-
-<div>
-
-<h2>Gestión de promociones</h2>
-
-<p>Aquí podrás crear o editar promociones.</p>
-
-</div>
-
-)}
-
-
-
-{/* PQRS */}
-
-{tab === "pqrs" && (
-
-<div>
-
-<h2>PQRS recibidos</h2>
-
-<p>Aquí se mostrarán las peticiones, quejas y sugerencias.</p>
-
-</div>
-
-)}
-
-
-
-{/* USUARIOS */}
-
-{tab === "usuarios" && (
-
-<div>
-
-<h2>Usuarios registrados</h2>
-
-<p>Aquí podrás ver los usuarios que han ingresado a la plataforma.</p>
-
-</div>
-
-)}
-
-</div>
-
-</section>
-
-</>
-
-)
-
-}
-
-export default Dashboard
+export default Dashboard;

@@ -95,3 +95,40 @@
   color:#444;
   font-size:14px;
 }
+
+.satisfaccion-box{
+margin-top:25px;
+padding:20px;
+background:#f9f9f9;
+border-radius:10px;
+text-align:center;
+}
+
+.satisfaccion-options{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:10px;
+}
+
+.emoji{
+font-size:24px;
+padding:10px;
+border-radius:50%;
+border:2px solid transparent;
+cursor:pointer;
+transition:all 0.3s ease;
+background:white;
+}
+
+.emoji:hover{
+transform:translateY(-5px) scale(1.1);
+}
+
+/* COLORES */
+
+.rojo:hover{ border-color:#e74c3c; }
+.naranja:hover{ border-color:#e67e22; }
+.amarillo:hover{ border-color:#f1c40f; }
+.verde:hover{ border-color:#2ecc71; }
+.feliz:hover{ border-color:#27ae60; }

@@ -1,86 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./LoginModal.css";
-import img2 from "../assets/logo.jpg";
 
 function LoginModal({ isOpen, onClose, onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [notif, setNotif] = useState(null);
 
-const [showPassword, setShowPassword] = useState(false);
+  useEffect(() => {
+    const users = JSON.parse(localStorage.getItem("users"));
+    if (!users) {
+      const defaultUsers = [
+        { email: "admin@floverzul.com", password: "admin123", role: "admin" },
+        { email: "empleado@floverzul.com", password: "emp123", role: "empleado" }
+      ];
+      localStorage.setItem("users", JSON.stringify(defaultUsers));
+    }
+  }, []);
 
-if (!isOpen) return null;
+  if (!isOpen) return null;
 
-return (
+  const handleLogin = () => {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const found = users.find(u => u.email === email && u.password === password);
 
-<div className="login-overlay">
+    if (found) {
+      localStorage.setItem("user", JSON.stringify({ email: found.email, role: found.role }));
+      setNotif(`Bienvenido ${found.role === "admin" ? "Administrador" : "Empleado"}`);
+      onLogin(found.role);
+      setTimeout(() => setNotif(null), 3000);
+      return;
+    }
 
-<div className="login-modal">
+    alert("Credenciales incorrectas");
+  };
 
-<button
-className="close-login"
-onClick={onClose}
->
-✕
-</button>
+  return (
+    <>
+      <div className="login-overlay">
+        <div className="login-modal">
+          <button className="close-btn" onClick={onClose}>✕</button>
+          <h2 className="login-title">Iniciar sesión</h2>
 
-<img
-src={img2}
-className="login-logo"
-/>
+          <input type="email" placeholder="tu@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type={showPassword ? "text" : "password"} placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <label>
+            <input type="checkbox" onChange={() => setShowPassword(!showPassword)} /> Mostrar contraseña
+          </label>
 
-<h2 className="login-title">Iniciar sesión</h2>
+          <button onClick={handleLogin}>Iniciar sesión</button>
+        </div>
+      </div>
 
-<p className="login-subtitle">
-Accede a tu cuenta de Jardines Floverzul
-</p>
-
-<label>Correo electrónico</label>
-
-<input
-type="email"
-placeholder="tu@gmail.com"
-/>
-
-<label>Contraseña</label>
-
-<input
-type={showPassword ? "text" : "password"}
-placeholder="********"
-/>
-
-<div className="show-password">
-
-<input
-type="checkbox"
-onChange={() => setShowPassword(!showPassword)}
-/>
-
-<span>Mostrar contraseña</span>
-
-</div>
-
-<button
-className="login-btn"
-onClick={onLogin}
->
-Iniciar sesión
-</button>
-
-<button
-className="cancel-login"
-onClick={onClose}
->
-Cancelar
-</button>
-
-<p className="forgot-password">
-¿Olvidó su contraseña?
-</p>
-
-</div>
-
-</div>
-
-);
-
+      {notif && (
+        <div className="login-notification">
+          {notif}
+        </div>
+      )}
+    </>
+  );
 }
 
 export default LoginModal;

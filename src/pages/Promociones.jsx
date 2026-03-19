@@ -8,15 +8,22 @@ function Promociones() {
   return (
     <>
       <Navbar />
+
       <section className="promociones-page">
         <div className="promociones-container">
-          <h1 className="promociones-title">Promociones activas</h1>
+          <h1 className="promociones-title">
+            Promociones activas
+          </h1>
+
           <p className="promociones-text">
             Aprovecha nuestras ofertas especiales y descuentos en plantas seleccionadas.
           </p>
         </div>
       </section>
+
+      {/* 🔥 AQUÍ SE MOSTRARÁ TODO */}
       <Cards />
+
       <Ferias />
       <Eventos />
     </>
