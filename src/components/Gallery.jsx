@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import "./Gallery.css";
 
-import img1 from "../assets/planta1.jpg";
-import img2 from "../assets/planta2.jpg";
+import img1 from "../assets/Planta1.jpg";
+import img2 from "../assets/Planta2.jpg";
 
 function Gallery() {
 

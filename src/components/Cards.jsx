@@ -2,9 +2,9 @@ import "./Cards.css";
 import { useState, useEffect } from "react";
 import { getPromociones } from "../services/promocionesService";
 
-import img1 from "../assets/planta3.jpg";
-import img2 from "../assets/planta4.jpg";
-import img3 from "../assets/planta5.jpg";
+import img1 from "../assets/Planta3.jpg";
+import img2 from "../assets/Planta4.jpg";
+import img3 from "../assets/Planta5.jpg";
 
 function Cards() {
 
