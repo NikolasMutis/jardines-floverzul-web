@@ -1,5 +1,6 @@
 import "./PqrsForm.css";
 import { useState } from "react";
+import { createPqrs } from "../services/pqrsService";
 
 function PqrsForm({ tipo }) {
 
@@ -13,7 +14,7 @@ function PqrsForm({ tipo }) {
     sugerencia: "Formulario de Sugerencia"
   };
 
-  const enviarPQRS = () => {
+  const enviarPQRS = async () => {
 
     if(nombre === "" || correo === "" || mensaje === ""){
       alert("Completa los campos")
@@ -21,22 +22,19 @@ function PqrsForm({ tipo }) {
     }
 
     const nueva = {
-      id: Date.now(),
       tipo: tipo,
       nombre: nombre,
       correo: correo,
       mensaje: mensaje,
-      fecha: new Date().toISOString().split("T")[0],
       estado: "Pendiente"
     }
 
-    const stored = JSON.parse(localStorage.getItem("pqrs")) || []
-    const updated = [...stored, nueva]
+    const createdPqrs = await createPqrs(nueva)
 
-    localStorage.setItem("pqrs", JSON.stringify(updated))
-
-    // 🔥 Notifica al dashboard
-    window.dispatchEvent(new Event("storage"))
+    if (!createdPqrs) {
+      alert("No fue posible enviar la PQRS")
+      return
+    }
 
     setNombre("")
     setCorreo("")

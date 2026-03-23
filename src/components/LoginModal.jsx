@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./LoginModal.css";
+import { login } from "../services/authService";
 
 function LoginModal({ isOpen, onClose, onLogin }) {
   const [email, setEmail] = useState("");
@@ -8,26 +9,47 @@ function LoginModal({ isOpen, onClose, onLogin }) {
   const [notif, setNotif] = useState(null);
 
   useEffect(() => {
-    const users = JSON.parse(localStorage.getItem("users"));
-    if (!users) {
-      const defaultUsers = [
-        { email: "admin@floverzul.com", password: "admin123", role: "admin" },
-        { email: "empleado@floverzul.com", password: "emp123", role: "empleado" }
-      ];
-      localStorage.setItem("users", JSON.stringify(defaultUsers));
+    if (!isOpen) {
+      setEmail("");
+      setPassword("");
+      setShowPassword(false);
     }
-  }, []);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleLogin = () => {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const found = users.find(u => u.email === email && u.password === password);
+  const syncUserList = (authUser) => {
+    try {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const nextUser = {
+        email: authUser.user.email,
+        name: authUser.user.user_metadata?.name || authUser.user.email,
+        rol: authUser.role || "empleado",
+        estado: "activo"
+      };
+      const userIndex = users.findIndex((user) => user.email === nextUser.email);
 
-    if (found) {
-      localStorage.setItem("user", JSON.stringify({ email: found.email, role: found.role }));
-      setNotif(`Bienvenido ${found.role === "admin" ? "Administrador" : "Empleado"}`);
-      onLogin(found.role);
+      if (userIndex >= 0) {
+        users[userIndex] = { ...users[userIndex], ...nextUser };
+      } else {
+        users.push(nextUser);
+      }
+
+      localStorage.setItem("users", JSON.stringify(users));
+      window.dispatchEvent(new Event("storage"));
+    } catch (error) {
+      console.error("Error syncing local users list:", error);
+    }
+  };
+
+  const handleLogin = async () => {
+    const authUser = await login(email, password);
+
+    if (authUser) {
+      syncUserList(authUser);
+      setNotif(`Bienvenido ${authUser.role === "admin" ? "Administrador" : "Empleado"}`);
+      onLogin(authUser.role);
+      onClose();
       setTimeout(() => setNotif(null), 3000);
       return;
     }
@@ -39,7 +61,7 @@ function LoginModal({ isOpen, onClose, onLogin }) {
     <>
       <div className="login-overlay">
         <div className="login-modal">
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose}>×</button>
           <h2 className="login-title">Iniciar sesión</h2>
 
           <input type="email" placeholder="tu@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} />

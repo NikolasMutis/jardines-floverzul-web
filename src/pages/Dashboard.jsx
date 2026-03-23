@@ -2,10 +2,32 @@ import "./Dashboard.css";
 import Navbar from "../components/Navbar";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser, logout as logoutService } from "../services/authService";
+import { getPlantas, createPlanta, deletePlanta as deletePlantaService } from "../services/PlantasService";
+import { getPromociones, createPromocion, updatePromocion, deletePromocion as deletePromocionService } from "../services/promocionesService";
+import { getPqrs, updatePqrsStatus, deletePqrs as deletePqrsService } from "../services/pqrsService";
+
+const getStoredUsers = () => {
+  try {
+    return JSON.parse(localStorage.getItem("users") || "[]");
+  } catch (error) {
+    console.error("Error reading users from localStorage:", error);
+    return [];
+  }
+};
+
+const saveStoredUsers = (users) => {
+  try {
+    localStorage.setItem("users", JSON.stringify(users));
+    window.dispatchEvent(new Event("storage"));
+  } catch (error) {
+    console.error("Error saving users in localStorage:", error);
+  }
+};
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [user, setUser] = useState(getCurrentUser());
   const isAdmin = user?.role === "admin";
 
   const [tab, setTab] = useState("plantas");
@@ -32,64 +54,220 @@ function Dashboard() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    const loggedUser = JSON.parse(localStorage.getItem("user"));
-    setUser(loggedUser);
+    let isMounted = true;
 
-    setPlants(JSON.parse(localStorage.getItem("plants")) || []);
-    setPromos(JSON.parse(localStorage.getItem("promos")) || []);
-    setPqrs(JSON.parse(localStorage.getItem("pqrs")) || []);
-    setUsers(JSON.parse(localStorage.getItem("users")) || []);
+    const loadDashboardData = async () => {
+      const [plantasData, promocionesData, pqrsData] = await Promise.all([
+        getPlantas(),
+        getPromociones(),
+        getPqrs()
+      ]);
+
+      if (!isMounted) {
+        return;
+      }
+
+      setPlants(plantasData);
+      setPromos(promocionesData);
+      setPqrs(pqrsData);
+    };
+
+    setUser(getCurrentUser());
+    setUsers(getStoredUsers());
+    loadDashboardData();
 
     const sync = () => {
-      setPlants(JSON.parse(localStorage.getItem("plants")) || []);
-      setPromos(JSON.parse(localStorage.getItem("promos")) || []);
-      setPqrs(JSON.parse(localStorage.getItem("pqrs")) || []);
-      setUsers(JSON.parse(localStorage.getItem("users")) || []);
+      setUser(getCurrentUser());
+      setUsers(getStoredUsers());
     };
 
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("storage", sync);
+    };
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem("user");
+  const logout = async () => {
+    await logoutService();
     setUser(null);
     navigate("/");
   };
 
-  const addPlant = () => {
+  const addPlant = async () => {
     if (name === "" || price === "" || tipo === "") {
       alert("Completa los campos");
       return;
     }
-    const imageURL = image ? URL.createObjectURL(image) : null;
-    const newPlant = { nombre: name, name, precio: `$${price}`, price, descripcion: desc, cientifico, categoria: tipo, tipo, estado, imagen: imageURL, image: imageURL };
-    const updated = [...plants, newPlant];
-    setPlants(updated);
-    localStorage.setItem("plants", JSON.stringify(updated));
-    window.dispatchEvent(new Event("storage"));
-    setName(""); setPrice(""); setDesc(""); setCientifico(""); setTipo(""); setEstado("Disponible"); setImage(null); setShowForm(false);
+
+    const newPlant = await createPlanta({
+      nombre: name,
+      precio: price,
+      descripcion: desc,
+      cientifico,
+      tipo,
+      estado,
+      imagenFile: image
+    });
+
+    if (!newPlant) {
+      alert("No fue posible guardar la planta");
+      return;
+    }
+
+    setPlants((currentPlants) => [newPlant, ...currentPlants]);
+    setName("");
+    setPrice("");
+    setDesc("");
+    setCientifico("");
+    setTipo("");
+    setEstado("Disponible");
+    setImage(null);
+    setShowForm(false);
   };
 
-  const deletePlant = i => {
-    const updated = [...plants]; updated.splice(i, 1); setPlants(updated); localStorage.setItem("plants", JSON.stringify(updated));
+  const deletePlant = async (index) => {
+    const plantToDelete = plants[index];
+
+    if (!plantToDelete?.id) {
+      return;
+    }
+
+    const deleted = await deletePlantaService(plantToDelete.id);
+
+    if (deleted) {
+      setPlants((currentPlants) => currentPlants.filter((_, currentIndex) => currentIndex !== index));
+    }
   };
 
-  const addPromo = () => {
-    if (promoTitle === "" || promoDesc === "") { alert("Completa los campos"); return; }
-    const newPromo = { title: promoTitle, desc: promoDesc, date: promoDate, status: promoStatus };
-    let updated = editIndex !== null ? [...promos] : [...promos, newPromo];
-    if (editIndex !== null) { updated[editIndex] = newPromo; setEditIndex(null); }
-    setPromos(updated); localStorage.setItem("promos", JSON.stringify(updated)); window.dispatchEvent(new Event("storage"));
-    setPromoTitle(""); setPromoDesc(""); setPromoDate(""); setPromoStatus("Activa"); setShowPromoForm(false);
+  const addPromo = async () => {
+    if (promoTitle === "" || promoDesc === "") {
+      alert("Completa los campos");
+      return;
+    }
+
+    if (editIndex !== null) {
+      const promoToUpdate = promos[editIndex];
+      const updatedPromo = await updatePromocion(promoToUpdate.id, {
+        title: promoTitle,
+        desc: promoDesc,
+        date: promoDate,
+        status: promoStatus
+      });
+
+      if (!updatedPromo) {
+        alert("No fue posible actualizar la promocion");
+        return;
+      }
+
+      setPromos((currentPromos) => currentPromos.map((promo, index) => (
+        index === editIndex ? updatedPromo : promo
+      )));
+      setEditIndex(null);
+    } else {
+      const newPromo = await createPromocion({
+        title: promoTitle,
+        desc: promoDesc,
+        date: promoDate,
+        status: promoStatus
+      });
+
+      if (!newPromo) {
+        alert("No fue posible guardar la promocion");
+        return;
+      }
+
+      setPromos((currentPromos) => [newPromo, ...currentPromos]);
+    }
+
+    setPromoTitle("");
+    setPromoDesc("");
+    setPromoDate("");
+    setPromoStatus("Activa");
+    setShowPromoForm(false);
   };
 
-  const deletePromo = i => { const updated = [...promos]; updated.splice(i, 1); setPromos(updated); localStorage.setItem("promos", JSON.stringify(updated)); };
-  const editPromo = i => { const p = promos[i]; setPromoTitle(p.title); setPromoDesc(p.desc); setPromoDate(p.date); setPromoStatus(p.status); setEditIndex(i); setShowPromoForm(true); };
-  const changeStatus = (i, estadoNuevo) => { const updated = [...pqrs]; updated[i].estado = estadoNuevo; setPqrs(updated); localStorage.setItem("pqrs", JSON.stringify(updated)); };
-  const deletePqrs = i => { const updated = [...pqrs]; updated.splice(i, 1); setPqrs(updated); localStorage.setItem("pqrs", JSON.stringify(updated)); };
-  const deleteUser = i => { if (!isAdmin) { alert("No tienes permisos"); return; } const updated = [...users]; updated.splice(i, 1); setUsers(updated); localStorage.setItem("users", JSON.stringify(updated)); };
-  const changeUserRole = i => { if (!isAdmin) { alert("No tienes permisos"); return; } const updated = [...users]; updated[i].rol = updated[i].rol === "admin" ? "cliente" : "admin"; setUsers(updated); localStorage.setItem("users", JSON.stringify(updated)); };
+  const deletePromo = async (index) => {
+    const promoToDelete = promos[index];
+
+    if (!promoToDelete?.id) {
+      return;
+    }
+
+    const deleted = await deletePromocionService(promoToDelete.id);
+
+    if (deleted) {
+      setPromos((currentPromos) => currentPromos.filter((_, currentIndex) => currentIndex !== index));
+    }
+  };
+
+  const editPromo = (index) => {
+    const promo = promos[index];
+    setPromoTitle(promo.title);
+    setPromoDesc(promo.desc);
+    setPromoDate(promo.date);
+    setPromoStatus(promo.status);
+    setEditIndex(index);
+    setShowPromoForm(true);
+  };
+
+  const changeStatus = async (index, estadoNuevo) => {
+    const pqrsToUpdate = pqrs[index];
+
+    if (!pqrsToUpdate?.id) {
+      return;
+    }
+
+    const updatedPqrs = await updatePqrsStatus(pqrsToUpdate.id, estadoNuevo);
+
+    if (updatedPqrs) {
+      setPqrs((currentPqrs) => currentPqrs.map((item, currentIndex) => (
+        currentIndex === index ? updatedPqrs : item
+      )));
+    }
+  };
+
+  const deletePqrs = async (index) => {
+    const pqrsToDelete = pqrs[index];
+
+    if (!pqrsToDelete?.id) {
+      return;
+    }
+
+    const deleted = await deletePqrsService(pqrsToDelete.id);
+
+    if (deleted) {
+      setPqrs((currentPqrs) => currentPqrs.filter((_, currentIndex) => currentIndex !== index));
+    }
+  };
+
+  const deleteUser = (index) => {
+    if (!isAdmin) {
+      alert("No tienes permisos");
+      return;
+    }
+
+    const updated = [...users];
+    updated.splice(index, 1);
+    setUsers(updated);
+    saveStoredUsers(updated);
+  };
+
+  const changeUserRole = (index) => {
+    if (!isAdmin) {
+      alert("No tienes permisos");
+      return;
+    }
+
+    const updated = [...users];
+    const currentRole = updated[index].rol || updated[index].role || "empleado";
+    const nextRole = currentRole === "admin" ? "empleado" : "admin";
+    updated[index].rol = nextRole;
+    updated[index].role = nextRole;
+    setUsers(updated);
+    saveStoredUsers(updated);
+  };
 
   return (
     <>
@@ -245,7 +423,7 @@ function Dashboard() {
                         <tr key={i}>
                           <td>{u.name}</td>
                           <td>{u.email}</td>
-                          <td><span className="badge tipo">{u.rol || "cliente"}</span></td>
+                          <td><span className="badge tipo">{u.rol || u.role || "empleado"}</span></td>
                           <td><span className={u.estado==="activo"?"badge ok":"badge no"}>{u.estado || "activo"}</span></td>
                           <td className="acciones">
                             <span onClick={()=>changeUserRole(i)}>🔄</span>

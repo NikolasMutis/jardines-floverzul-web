@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import "./Catalogo.css";
 import { useState, useEffect } from "react";
+import { getPlantas } from "../services/PlantasService";
 
 import planta1 from "../assets/Planta7.jpg";
 import planta2 from "../assets/Planta6.jpg";
@@ -14,16 +15,12 @@ function Catalogo() {
   const [extraPlants, setExtraPlants] = useState([]);
 
   useEffect(() => {
-    const load = () => {
-const stored = JSON.parse(localStorage.getItem("plants")) || [];
-setExtraPlants(stored);
-}
+    const load = async () => {
+      const plantas = await getPlantas();
+      setExtraPlants(plantas);
+    }
 
-load()
-
-window.addEventListener("storage", load)
-
-return () => window.removeEventListener("storage", load)
+    load()
 
 }, []);
 
@@ -172,7 +169,7 @@ return () => window.removeEventListener("storage", load)
               className="close-modal"
               onClick={() => setSelectedPlant(null)}
             >
-              ✕
+              ×
             </button>
 
             <h2>{selectedPlant.nombre || selectedPlant.name}</h2>

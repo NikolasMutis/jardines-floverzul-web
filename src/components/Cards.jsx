@@ -1,5 +1,6 @@
 import "./Cards.css";
 import { useState, useEffect } from "react";
+import { getPromociones } from "../services/promocionesService";
 
 import img1 from "../assets/planta3.jpg";
 import img2 from "../assets/planta4.jpg";
@@ -11,47 +12,49 @@ function Cards() {
 
   useEffect(() => {
 
-    const storedPromos = JSON.parse(localStorage.getItem("promos")) || [];
+    const loadPromociones = async () => {
+      const promociones = await getPromociones();
 
-    const productosBase = [
-      {
-        id: 1,
-        nombre: "Producto 1",
+      const productosBase = [
+        {
+          id: 1,
+          nombre: "Producto 1",
+          imagen: img1,
+          estado: "Activa",
+          descuento: "-20%",
+          descripcion: "¡20% de descuento en toda nuestra colección de plantas ornamentales!"
+        },
+        {
+          id: 2,
+          nombre: "Producto 2",
+          imagen: img2,
+          estado: "Desactivada",
+          descuento: "-10%",
+          descripcion: "Lleva 3 suculentas y paga solo 2."
+        },
+        {
+          id: 3,
+          nombre: "Producto 3",
+          imagen: img3,
+          estado: "Activa",
+          descuento: "-30%",
+          descripcion: "15% de descuento en todos los helechos."
+        }
+      ];
+
+      const promosAdaptadas = promociones.map((promo, index) => ({
+        id: promo.id || index + 100,
+        nombre: promo.title,
         imagen: img1,
-        estado: "Activa",
-        descuento: "-20%",
-        descripcion: "¡20% de descuento en toda nuestra colección de plantas ornamentales!"
-      },
-      {
-        id: 2,
-        nombre: "Producto 2",
-        imagen: img2,
-        estado: "Desactivada",
-        descuento: "-10%",
-        descripcion: "Lleva 3 suculentas y paga solo 2."
-      },
-      {
-        id: 3,
-        nombre: "Producto 3",
-        imagen: img3,
-        estado: "Activa",
-        descuento: "-30%",
-        descripcion: "15% de descuento en todos los helechos."
-      }
-    ];
+        estado: promo.status,
+        descuento: promo.descuento,
+        descripcion: promo.desc
+      }));
 
-    /* 🔥 CONVERTIR PROMOS DEL ADMIN A CARDS */
-    const promosAdaptadas = storedPromos.map((p, i) => ({
-      id: i + 100,
-      nombre: p.title,
-      imagen: img1,
-      estado: p.status,
-      descuento: "-20%", // luego lo haces dinámico
-      descripcion: p.desc
-    }));
+      setProductos([...productosBase, ...promosAdaptadas]);
+    };
 
-    /* 🔥 SOLO UNA LISTA (SIN DUPLICAR) */
-    setProductos([...productosBase, ...promosAdaptadas]);
+    loadPromociones();
 
   }, []);
 
