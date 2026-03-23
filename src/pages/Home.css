@@ -1,0 +1,15 @@
+.about-layout{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:60px;
+  padding:60px 8%;
+
+}
+
+@media (max-width:900px){
+  .about-layout{
+    flex-direction:column;
+  }
+
+}
