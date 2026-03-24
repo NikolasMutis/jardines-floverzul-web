@@ -31,6 +31,9 @@ function Dashboard() {
   const [pqrs, setPqrs] = useState([]);
   const [users, setUsers] = useState([]);
 
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState("");
+
   useEffect(() => {
     const loggedUser = JSON.parse(localStorage.getItem("user"));
     setUser(loggedUser);
@@ -86,14 +89,34 @@ function Dashboard() {
 
   const deletePromo = i => { const updated = [...promos]; updated.splice(i, 1); setPromos(updated); localStorage.setItem("promos", JSON.stringify(updated)); };
   const editPromo = i => { const p = promos[i]; setPromoTitle(p.title); setPromoDesc(p.desc); setPromoDate(p.date); setPromoStatus(p.status); setEditIndex(i); setShowPromoForm(true); };
+
   const changeStatus = (i, estadoNuevo) => { const updated = [...pqrs]; updated[i].estado = estadoNuevo; setPqrs(updated); localStorage.setItem("pqrs", JSON.stringify(updated)); };
   const deletePqrs = i => { const updated = [...pqrs]; updated.splice(i, 1); setPqrs(updated); localStorage.setItem("pqrs", JSON.stringify(updated)); };
+
+  const viewMessage = (p) => {
+    setSelectedMessage(p.mensaje || p.descripcion || "Sin mensaje");
+    setShowMessageModal(true);
+  };
+
   const deleteUser = i => { if (!isAdmin) { alert("No tienes permisos"); return; } const updated = [...users]; updated.splice(i, 1); setUsers(updated); localStorage.setItem("users", JSON.stringify(updated)); };
   const changeUserRole = i => { if (!isAdmin) { alert("No tienes permisos"); return; } const updated = [...users]; updated[i].rol = updated[i].rol === "admin" ? "cliente" : "admin"; setUsers(updated); localStorage.setItem("users", JSON.stringify(updated)); };
 
   return (
     <>
       <Navbar />
+
+      {showMessageModal && (
+        <div className="message-modal-overlay">
+          <div className="message-modal">
+            <h3>Mensaje del usuario</h3>
+            <p>{selectedMessage}</p>
+            <button className="btn-green" onClick={() => setShowMessageModal(false)}>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
       <section className="dashboard">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 className="dash-title">Panel Administrativo</h1>
@@ -159,7 +182,6 @@ function Dashboard() {
             </div>
           )}
 
-          {/* PROMOCIONES */}
           {tab==="promociones" && (
             <div>
               <div className="admin-header">
@@ -194,7 +216,6 @@ function Dashboard() {
             </div>
           )}
 
-          {/* PQRS */}
           {tab==="pqrs" && (
             <div>
               <div className="admin-header">
@@ -216,6 +237,7 @@ function Dashboard() {
                           <td>{p.fecha}</td>
                           <td><span className={p.estado==="Pendiente"?"badge no":p.estado==="En proceso"?"badge tipo":"badge ok"}>{p.estado}</span></td>
                           <td className="acciones">
+                            <span onClick={()=>viewMessage(p)}>👁</span>
                             <span onClick={()=>changeStatus(i,"Pendiente")}>🕓</span>
                             <span onClick={()=>changeStatus(i,"En proceso")}>⚙️</span>
                             <span onClick={()=>changeStatus(i,"Resuelta")}>✅</span>
@@ -230,7 +252,6 @@ function Dashboard() {
             </div>
           )}
 
-          {/* USUARIOS */}
           {tab==="usuarios" && isAdmin && (
             <div>
               <div className="admin-header"><h2>Gestión de Usuarios</h2></div>

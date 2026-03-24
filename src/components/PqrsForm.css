@@ -125,6 +125,11 @@ background:white;
 transform:translateY(-5px) scale(1.1);
 }
 
+.emoji.active{
+  transform: scale(1.2);
+  border: 2px solid #065e1b;
+}
+
 /* COLORES */
 
 .rojo:hover{ border-color:#e74c3c; }

@@ -36,29 +36,79 @@ function LoginModal({ isOpen, onClose, onLogin }) {
   };
 
   return (
-    <>
-      <div className="login-overlay">
-        <div className="login-modal">
-          <button className="close-btn" onClick={onClose}>✕</button>
-          <h2 className="login-title">Iniciar sesión</h2>
+  <>
+    <div className="login-overlay">
+      <div className="login-modal">
 
-          <input type="email" placeholder="tu@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input type={showPassword ? "text" : "password"} placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <label>
-            <input type="checkbox" onChange={() => setShowPassword(!showPassword)} /> Mostrar contraseña
-          </label>
+        <button className="close-btn" onClick={onClose}>✕</button>
 
-          <button onClick={handleLogin}>Iniciar sesión</button>
+        <div className="login-icon">🌿</div>
+
+        <h2 className="login-title">Iniciar Sesión</h2>
+        <p className="login-subtitle">
+          Accede a tu cuenta de Jardines Floverzul
+        </p>
+
+        <label>Correo electrónico</label>
+        <input
+          type="email"
+          placeholder="tu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <label>Contraseña</label>
+        <input
+          type={showPassword ? "text" : "password"}
+          placeholder="********"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <div className="show-password">
+          <input
+            type="checkbox"
+            onChange={() => setShowPassword(!showPassword)}
+          />
+          <span>Mostrar contraseña</span>
         </div>
+
+        <button className="login-btn" onClick={handleLogin}>
+          Iniciar sesión
+        </button>
+
+        <p className="forgot-password">
+          ¿Olvidaste tu contraseña?
+        </p>
+
+        <hr className="login-divider" />
+
+        <div className="login-demo">
+          <h4>Credenciales de prueba:</h4>
+
+          <div className="demo-card">
+            <strong>Administrador</strong>
+            <p>📧 admin@floverzul.com</p>
+            <p>🔑 admin123</p>
+          </div>
+
+          <div className="demo-card">
+            <strong>Empleado</strong>
+            <p>📧 empleado@floverzul.com</p>
+            <p>🔑 emp123</p>
+          </div>
+        </div>
+
       </div>
+    </div>
 
-      {notif && (
-        <div className="login-notification">
-          {notif}
-        </div>
-      )}
-    </>
-  );
+    {notif && (
+      <div className="login-notification">
+        {notif}
+      </div>
+    )}
+  </>
+);
 }
 
 export default LoginModal;
