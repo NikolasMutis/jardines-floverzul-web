@@ -9,10 +9,7 @@ const formatStatusToDb = (estado = 'Activa') => {
 }
 
 const formatDate = (value) => {
-  if (!value) {
-    return ''
-  }
-
+  if (!value) return ''
   return value.split('T')[0]
 }
 
@@ -37,7 +34,7 @@ const normalizePromocion = (item, fallback = {}) => {
     descripcion: desc,
     desc,
     descuento: normalizeDiscount(discountValue),
-    descuentoValor: Number.isNaN(Number(discountValue)) ? 20 : Number(discountValue),
+    descuentoValor: Number(discountValue) || 20,
     fecha_inicio: item?.fecha_inicio ?? fallback?.fecha_inicio ?? null,
     fecha_fin: item?.fecha_fin ?? fallback?.fecha_fin ?? null,
     date: formatDate(dateValue),
@@ -50,9 +47,7 @@ const normalizePromocion = (item, fallback = {}) => {
 const buildCreatePayload = (data) => ({
   titulo: data.titulo ?? data.title ?? '',
   descripcion: data.descripcion ?? data.desc ?? '',
-  descuento: Number.isNaN(Number(data.descuento ?? data.discount))
-    ? 20
-    : Number(data.descuento ?? data.discount),
+  descuento: Number(data.descuento ?? data.discount) || 20,
   fecha_inicio: data.fecha_inicio ?? new Date().toISOString(),
   fecha_fin: data.fecha_fin ?? (data.date ? `${data.date}T23:59:59` : null),
   estado: formatStatusToDb(data.estado ?? data.status)
@@ -70,9 +65,7 @@ const buildUpdatePayload = (data) => {
   }
 
   if (data.descuento !== undefined || data.discount !== undefined) {
-    payload.descuento = Number.isNaN(Number(data.descuento ?? data.discount))
-      ? 20
-      : Number(data.descuento ?? data.discount)
+    payload.descuento = Number(data.descuento ?? data.discount) || 20
   }
 
   if (data.fecha_inicio !== undefined) {
@@ -97,11 +90,9 @@ export const getPromociones = async () => {
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) {
-      throw error
-    }
+    if (error) throw error
 
-    return (data || []).map((item) => normalizePromocion(item))
+    return (data || []).map(normalizePromocion)
   } catch (error) {
     console.error('Error fetching promociones:', error)
     return []
@@ -111,15 +102,14 @@ export const getPromociones = async () => {
 export const createPromocion = async (data) => {
   try {
     const payload = buildCreatePayload(data)
+
     const { data: createdPromocion, error } = await supabase
       .from('promociones')
       .insert([payload])
       .select()
       .single()
 
-    if (error) {
-      throw error
-    }
+    if (error) throw error
 
     return normalizePromocion(createdPromocion, data)
   } catch (error) {
@@ -131,6 +121,7 @@ export const createPromocion = async (data) => {
 export const updatePromocion = async (id, data) => {
   try {
     const payload = buildUpdatePayload(data)
+
     const { data: updatedPromocion, error } = await supabase
       .from('promociones')
       .update(payload)
@@ -138,9 +129,7 @@ export const updatePromocion = async (id, data) => {
       .select()
       .single()
 
-    if (error) {
-      throw error
-    }
+    if (error) throw error
 
     return normalizePromocion(updatedPromocion, data)
   } catch (error) {
@@ -156,9 +145,7 @@ export const deletePromocion = async (id) => {
       .delete()
       .eq('id', id)
 
-    if (error) {
-      throw error
-    }
+    if (error) throw error
 
     return true
   } catch (error) {

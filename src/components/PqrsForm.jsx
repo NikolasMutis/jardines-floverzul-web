@@ -7,6 +7,7 @@ function PqrsForm({ tipo }) {
   const [nombre,setNombre] = useState("")
   const [correo,setCorreo] = useState("")
   const [mensaje,setMensaje] = useState("")
+  const [satisfaccion,setSatisfaccion] = useState("")
 
   const titulo = {
     peticion: "Formulario de Petición",
@@ -26,6 +27,7 @@ function PqrsForm({ tipo }) {
       nombre: nombre,
       correo: correo,
       mensaje: mensaje,
+      satisfaccion: satisfaccion,
       estado: "Pendiente"
     }
 
@@ -39,6 +41,7 @@ function PqrsForm({ tipo }) {
     setNombre("")
     setCorreo("")
     setMensaje("")
+    setSatisfaccion("")
 
     alert("PQRS enviada 💚")
   }
@@ -107,19 +110,43 @@ function PqrsForm({ tipo }) {
 
         <div className="satisfaccion-box">
 
-  <h4>¿Qué tan satisfecho se encuentra con nuestro servicio?</h4>
+          <h4>¿Qué tan satisfecho se encuentra con nuestro servicio?</h4>
 
-  <div className="satisfaccion-options">
+          <div className="satisfaccion-options">
 
-    <button className="emoji rojo">😡</button>
-    <button className="emoji naranja">😕</button>
-    <button className="emoji amarillo">😐</button>
-    <button className="emoji verde">🙂</button>
-    <button className="emoji feliz">😄</button>
+            <button 
+              type="button" 
+              className={`emoji rojo ${satisfaccion==="rojo" ? "active" : ""}`}
+              onClick={()=>setSatisfaccion("rojo")}
+            >😡</button>
 
-  </div>
+            <button 
+              type="button" 
+              className={`emoji naranja ${satisfaccion==="naranja" ? "active" : ""}`}
+              onClick={()=>setSatisfaccion("naranja")}
+            >😕</button>
 
-</div>
+            <button 
+              type="button" 
+              className={`emoji amarillo ${satisfaccion==="amarillo" ? "active" : ""}`}
+              onClick={()=>setSatisfaccion("amarillo")}
+            >😐</button>
+
+            <button 
+              type="button" 
+              className={`emoji verde ${satisfaccion==="verde" ? "active" : ""}`}
+              onClick={()=>setSatisfaccion("verde")}
+            >🙂</button>
+
+            <button 
+              type="button" 
+              className={`emoji feliz ${satisfaccion==="feliz" ? "active" : ""}`}
+              onClick={()=>setSatisfaccion("feliz")}
+            >😄</button>
+
+          </div>
+
+        </div>
 
         <button className="submit-btn">
           Enviar {tipo}

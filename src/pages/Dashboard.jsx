@@ -2,32 +2,14 @@ import "./Dashboard.css";
 import Navbar from "../components/Navbar";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, logout as logoutService } from "../services/authService";
-import { getPlantas, createPlanta, deletePlanta as deletePlantaService } from "../services/PlantasService";
-import { getPromociones, createPromocion, updatePromocion, deletePromocion as deletePromocionService } from "../services/promocionesService";
-import { getPqrs, updatePqrsStatus, deletePqrs as deletePqrsService } from "../services/pqrsService";
 
-const getStoredUsers = () => {
-  try {
-    return JSON.parse(localStorage.getItem("users") || "[]");
-  } catch (error) {
-    console.error("Error reading users from localStorage:", error);
-    return [];
-  }
-};
-
-const saveStoredUsers = (users) => {
-  try {
-    localStorage.setItem("users", JSON.stringify(users));
-    window.dispatchEvent(new Event("storage"));
-  } catch (error) {
-    console.error("Error saving users in localStorage:", error);
-  }
-};
+import { getPlantas, createPlanta, deletePlanta } from "../services/PlantasService";
+import { getPromociones, createPromocion, updatePromocion, deletePromocion } from "../services/promocionesService";
+import { getPqrs, updatePqrsStatus, deletePqrs } from "../services/pqrsService";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(getCurrentUser());
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
   const isAdmin = user?.role === "admin";
 
   const [tab, setTab] = useState("plantas");
@@ -53,44 +35,36 @@ function Dashboard() {
   const [pqrs, setPqrs] = useState([]);
   const [users, setUsers] = useState([]);
 
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState("");
+
   useEffect(() => {
-    let isMounted = true;
+    const loggedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(loggedUser);
 
-    const loadDashboardData = async () => {
-      const [plantasData, promocionesData, pqrsData] = await Promise.all([
-        getPlantas(),
-        getPromociones(),
-        getPqrs()
-      ]);
-
-      if (!isMounted) {
-        return;
-      }
-
-      setPlants(plantasData);
-      setPromos(promocionesData);
-      setPqrs(pqrsData);
-    };
-
-    setUser(getCurrentUser());
-    setUsers(getStoredUsers());
-    loadDashboardData();
+    loadData();
 
     const sync = () => {
-      setUser(getCurrentUser());
-      setUsers(getStoredUsers());
+      setUsers(JSON.parse(localStorage.getItem("users")) || []);
     };
 
     window.addEventListener("storage", sync);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("storage", sync);
-    };
+    return () => window.removeEventListener("storage", sync);
   }, []);
 
-  const logout = async () => {
-    await logoutService();
+  const loadData = async () => {
+    const plantas = await getPlantas();
+    const promociones = await getPromociones();
+    const pqrsData = await getPqrs();
+
+    setPlants(plantas || []);
+    setPromos(promociones || []);
+    setPqrs(pqrsData || []);
+    setUsers(JSON.parse(localStorage.getItem("users")) || []);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("user");
     setUser(null);
     navigate("/");
   };
@@ -111,12 +85,10 @@ function Dashboard() {
       imagenFile: image
     });
 
-    if (!newPlant) {
-      alert("No fue posible guardar la planta");
-      return;
-    }
+    if (!newPlant) return;
 
-    setPlants((currentPlants) => [newPlant, ...currentPlants]);
+    setPlants([newPlant, ...plants]);
+
     setName("");
     setPrice("");
     setDesc("");
@@ -127,18 +99,16 @@ function Dashboard() {
     setShowForm(false);
   };
 
-  const deletePlant = async (index) => {
-    const plantToDelete = plants[index];
+  const deletePlantLocal = async (i) => {
+    const plant = plants[i];
+    if (!plant?.id) return;
 
-    if (!plantToDelete?.id) {
-      return;
-    }
+    const ok = await deletePlanta(plant.id);
+    if (!ok) return;
 
-    const deleted = await deletePlantaService(plantToDelete.id);
-
-    if (deleted) {
-      setPlants((currentPlants) => currentPlants.filter((_, currentIndex) => currentIndex !== index));
-    }
+    const updated = [...plants];
+    updated.splice(i, 1);
+    setPlants(updated);
   };
 
   const addPromo = async () => {
@@ -148,22 +118,20 @@ function Dashboard() {
     }
 
     if (editIndex !== null) {
-      const promoToUpdate = promos[editIndex];
-      const updatedPromo = await updatePromocion(promoToUpdate.id, {
+      const promo = promos[editIndex];
+
+      const updatedPromo = await updatePromocion(promo.id, {
         title: promoTitle,
         desc: promoDesc,
         date: promoDate,
         status: promoStatus
       });
 
-      if (!updatedPromo) {
-        alert("No fue posible actualizar la promocion");
-        return;
-      }
+      if (!updatedPromo) return;
 
-      setPromos((currentPromos) => currentPromos.map((promo, index) => (
-        index === editIndex ? updatedPromo : promo
-      )));
+      const updated = [...promos];
+      updated[editIndex] = updatedPromo;
+      setPromos(updated);
       setEditIndex(null);
     } else {
       const newPromo = await createPromocion({
@@ -173,12 +141,9 @@ function Dashboard() {
         status: promoStatus
       });
 
-      if (!newPromo) {
-        alert("No fue posible guardar la promocion");
-        return;
-      }
+      if (!newPromo) return;
 
-      setPromos((currentPromos) => [newPromo, ...currentPromos]);
+      setPromos([newPromo, ...promos]);
     }
 
     setPromoTitle("");
@@ -188,95 +153,95 @@ function Dashboard() {
     setShowPromoForm(false);
   };
 
-  const deletePromo = async (index) => {
-    const promoToDelete = promos[index];
+  const deletePromoLocal = async (i) => {
+    const promo = promos[i];
+    if (!promo?.id) return;
 
-    if (!promoToDelete?.id) {
-      return;
-    }
+    const ok = await deletePromocion(promo.id);
+    if (!ok) return;
 
-    const deleted = await deletePromocionService(promoToDelete.id);
-
-    if (deleted) {
-      setPromos((currentPromos) => currentPromos.filter((_, currentIndex) => currentIndex !== index));
-    }
+    const updated = [...promos];
+    updated.splice(i, 1);
+    setPromos(updated);
   };
 
-  const editPromo = (index) => {
-    const promo = promos[index];
-    setPromoTitle(promo.title);
-    setPromoDesc(promo.desc);
-    setPromoDate(promo.date);
-    setPromoStatus(promo.status);
-    setEditIndex(index);
+  const editPromo = i => {
+    const p = promos[i];
+    setPromoTitle(p.title);
+    setPromoDesc(p.desc);
+    setPromoDate(p.date);
+    setPromoStatus(p.status);
+    setEditIndex(i);
     setShowPromoForm(true);
   };
 
-  const changeStatus = async (index, estadoNuevo) => {
-    const pqrsToUpdate = pqrs[index];
+  const changeStatus = async (i, estadoNuevo) => {
+    const item = pqrs[i];
+    if (!item?.id) return;
 
-    if (!pqrsToUpdate?.id) {
-      return;
-    }
+    const updated = await updatePqrsStatus(item.id, estadoNuevo);
+    if (!updated) return;
 
-    const updatedPqrs = await updatePqrsStatus(pqrsToUpdate.id, estadoNuevo);
-
-    if (updatedPqrs) {
-      setPqrs((currentPqrs) => currentPqrs.map((item, currentIndex) => (
-        currentIndex === index ? updatedPqrs : item
-      )));
-    }
+    const copy = [...pqrs];
+    copy[i] = updated;
+    setPqrs(copy);
   };
 
-  const deletePqrs = async (index) => {
-    const pqrsToDelete = pqrs[index];
+  const deletePqrsLocal = async (i) => {
+    const item = pqrs[i];
+    if (!item?.id) return;
 
-    if (!pqrsToDelete?.id) {
-      return;
-    }
+    const ok = await deletePqrs(item.id);
+    if (!ok) return;
 
-    const deleted = await deletePqrsService(pqrsToDelete.id);
-
-    if (deleted) {
-      setPqrs((currentPqrs) => currentPqrs.filter((_, currentIndex) => currentIndex !== index));
-    }
+    const updated = [...pqrs];
+    updated.splice(i, 1);
+    setPqrs(updated);
   };
 
-  const deleteUser = (index) => {
-    if (!isAdmin) {
-      alert("No tienes permisos");
-      return;
-    }
+  const viewMessage = (p) => {
+    setSelectedMessage(p.mensaje || p.descripcion || "Sin mensaje");
+    setShowMessageModal(true);
+  };
 
+  const deleteUser = i => {
+    if (!isAdmin) return;
     const updated = [...users];
-    updated.splice(index, 1);
+    updated.splice(i, 1);
     setUsers(updated);
-    saveStoredUsers(updated);
+    localStorage.setItem("users", JSON.stringify(updated));
   };
 
-  const changeUserRole = (index) => {
-    if (!isAdmin) {
-      alert("No tienes permisos");
-      return;
-    }
-
+  const changeUserRole = i => {
+    if (!isAdmin) return;
     const updated = [...users];
-    const currentRole = updated[index].rol || updated[index].role || "empleado";
-    const nextRole = currentRole === "admin" ? "empleado" : "admin";
-    updated[index].rol = nextRole;
-    updated[index].role = nextRole;
+    updated[i].rol = updated[i].rol === "admin" ? "cliente" : "admin";
     setUsers(updated);
-    saveStoredUsers(updated);
+    localStorage.setItem("users", JSON.stringify(updated));
   };
 
   return (
     <>
       <Navbar />
+
+      {showMessageModal && (
+        <div className="message-modal-overlay">
+          <div className="message-modal">
+            <h3>Mensaje del usuario</h3>
+            <p>{selectedMessage}</p>
+            <button className="btn-green" onClick={() => setShowMessageModal(false)}>
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+
       <section className="dashboard">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 className="dash-title">Panel Administrativo</h1>
           {user && <button className="btn-green" onClick={logout}>Cerrar sesión</button>}
         </div>
+
         <p className="dash-subtitle">Gestión completa</p>
 
         <div className="dash-cards">
@@ -294,6 +259,7 @@ function Dashboard() {
         </div>
 
         <div className="dash-content">
+
           {tab==="plantas" && (
             <div>
               <div className="admin-header">
@@ -303,6 +269,7 @@ function Dashboard() {
                   <button className="btn-green" onClick={()=>setShowForm(!showForm)}>+ Nueva Planta</button>
                 </div>
               </div>
+
               {showForm && (
                 <div className="filters">
                   <input placeholder="Nombre" value={name} onChange={(e)=>setName(e.target.value)} />
@@ -318,32 +285,39 @@ function Dashboard() {
                   <button className="btn-green" onClick={addPlant}>Guardar</button>
                 </div>
               )}
+
               <div className="table-container">
                 <table className="admin-table">
-                  <thead><tr><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
-                  <tbody>{plants.map((p,i)=>(
-                    <tr key={i}>
-                      <td>{p.name}</td>
-                      <td><span className="badge tipo">{p.tipo}</span></td>
-                      <td>{p.precio}</td>
-                      <td><span className={p.estado==="Disponible"?"badge ok":"badge no"}>{p.estado}</span></td>
-                      <td className="acciones">
-                        <span>👁</span><span>✏️</span><span onClick={()=>deletePlant(i)}>🗑</span>
-                      </td>
-                    </tr>
-                  ))}</tbody>
+                  <thead>
+                    <tr><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+                  </thead>
+                  <tbody>
+                    {plants.map((p,i)=>(
+                      <tr key={i}>
+                        <td>{p.name}</td>
+                        <td><span className="badge tipo">{p.tipo}</span></td>
+                        <td>{p.precio}</td>
+                        <td><span className={p.estado==="Disponible"?"badge ok":"badge no"}>{p.estado}</span></td>
+                        <td className="acciones">
+                          <span>👁</span>
+                          <span>✏️</span>
+                          <span onClick={()=>deletePlantLocal(i)}>🗑</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               </div>
             </div>
           )}
 
-          {/* PROMOCIONES */}
           {tab==="promociones" && (
             <div>
               <div className="admin-header">
                 <h2>Promociones</h2>
                 <button className="btn-green" onClick={()=>setShowPromoForm(!showPromoForm)}>+ Nueva Promoción</button>
               </div>
+
               {showPromoForm && (
                 <div className="promo-form">
                   <input placeholder="Título" value={promoTitle} onChange={(e)=>setPromoTitle(e.target.value)} />
@@ -356,29 +330,32 @@ function Dashboard() {
                   <button className="btn-green" onClick={addPromo}>Guardar</button>
                 </div>
               )}
-              <div className="promo-list">{promos.map((p,i)=>(
-                <div key={i} className="promo-card">
-                  <div>
-                    <h3>{p.title}<span className="badge ok">{p.status}</span></h3>
-                    <p>{p.desc}</p>
-                    <small>Válida hasta: {p.date}</small>
+
+              <div className="promo-list">
+                {promos.map((p,i)=>(
+                  <div key={i} className="promo-card">
+                    <div>
+                      <h3>{p.title}<span className="badge ok">{p.status}</span></h3>
+                      <p>{p.desc}</p>
+                      <small>Válida hasta: {p.date}</small>
+                    </div>
+                    <div className="promo-actions">
+                      <span onClick={()=>editPromo(i)}>✏️</span>
+                      <span onClick={()=>deletePromoLocal(i)}>🗑</span>
+                    </div>
                   </div>
-                  <div className="promo-actions">
-                    <span onClick={()=>editPromo(i)}>✏️</span>
-                    <span onClick={()=>deletePromo(i)}>🗑</span>
-                  </div>
-                </div>
-              ))}</div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* PQRS */}
           {tab==="pqrs" && (
             <div>
               <div className="admin-header">
                 <h2>PQRS Recibidos</h2>
                 <button className="btn-white">⬇ Exportar Reporte</button>
               </div>
+
               <div className="table-container">
                 <table className="admin-table">
                   <thead>
@@ -394,10 +371,11 @@ function Dashboard() {
                           <td>{p.fecha}</td>
                           <td><span className={p.estado==="Pendiente"?"badge no":p.estado==="En proceso"?"badge tipo":"badge ok"}>{p.estado}</span></td>
                           <td className="acciones">
+                            <span onClick={()=>viewMessage(p)}>👁</span>
                             <span onClick={()=>changeStatus(i,"Pendiente")}>🕓</span>
                             <span onClick={()=>changeStatus(i,"En proceso")}>⚙️</span>
                             <span onClick={()=>changeStatus(i,"Resuelta")}>✅</span>
-                            <span onClick={()=>deletePqrs(i)}>🗑</span>
+                            <span onClick={()=>deletePqrsLocal(i)}>🗑</span>
                           </td>
                         </tr>
                       ))
@@ -408,7 +386,6 @@ function Dashboard() {
             </div>
           )}
 
-          {/* USUARIOS */}
           {tab==="usuarios" && isAdmin && (
             <div>
               <div className="admin-header"><h2>Gestión de Usuarios</h2></div>
@@ -423,7 +400,7 @@ function Dashboard() {
                         <tr key={i}>
                           <td>{u.name}</td>
                           <td>{u.email}</td>
-                          <td><span className="badge tipo">{u.rol || u.role || "empleado"}</span></td>
+                          <td><span className="badge tipo">{u.rol || "cliente"}</span></td>
                           <td><span className={u.estado==="activo"?"badge ok":"badge no"}>{u.estado || "activo"}</span></td>
                           <td className="acciones">
                             <span onClick={()=>changeUserRole(i)}>🔄</span>
@@ -437,6 +414,7 @@ function Dashboard() {
               </div>
             </div>
           )}
+
         </div>
       </section>
     </>
