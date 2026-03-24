@@ -1,12 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import "./PQRS.css";
 import PqrsCards from "../components/PqrsCards";
 import PqrsForm from "../components/PqrsForm";
+import { getAllPQRS } from "../services/pqrsService";
 
 function PQRS() {
 
   const [tipoSolicitud, setTipoSolicitud] = useState("peticion");
+
+  useEffect(() => {
+
+    const cargarPQRS = async () => {
+
+      const { data, error } = await getAllPQRS();
+
+      console.log("DATOS PQRS:", data);
+      console.log("ERROR:", error);
+
+    };
+
+    cargarPQRS();
+
+  }, []);
 
   return (
     <>
