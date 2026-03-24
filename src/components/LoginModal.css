@@ -207,23 +207,3 @@ cursor:pointer;
   margin: 0;
 }
 
-/* 🔥 SEPARACIÓN DE CREDENCIALES */
-.login-demo {
-  margin-top: 25px;
-}
-
-/* 🔥 CUADROS VERDES */
-.demo-card {
-  background: #eaf5ec;
-  border: 1px solid #cde3d1;
-  border-radius: 12px;
-  padding: 12px;
-  margin-top: 10px;
-  text-align: left;
-}
-
-.demo-card strong {
-  color: #065e1b;
-  display: block;
-  margin-bottom: 5px;
-}

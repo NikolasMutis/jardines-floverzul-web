@@ -83,22 +83,6 @@ function LoginModal({ isOpen, onClose, onLogin }) {
 
         <hr className="login-divider" />
 
-        <div className="login-demo">
-          <h4>Credenciales de prueba:</h4>
-
-          <div className="demo-card">
-            <strong>Administrador</strong>
-            <p>📧 admin@floverzul.com</p>
-            <p>🔑 admin123</p>
-          </div>
-
-          <div className="demo-card">
-            <strong>Empleado</strong>
-            <p>📧 empleado@floverzul.com</p>
-            <p>🔑 emp123</p>
-          </div>
-        </div>
-
       </div>
     </div>
 
